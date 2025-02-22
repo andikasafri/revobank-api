@@ -1,0 +1,13 @@
+# Python virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Compiled Python files
+__pycache__/
+*.pyc
+
+# Log files
+*.log
+*.sqlite3
