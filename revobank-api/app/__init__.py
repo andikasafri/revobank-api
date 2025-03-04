@@ -1,35 +1,32 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
-from flask_restx import Api
 from dotenv import load_dotenv
-import os
 
 db = SQLAlchemy()
 jwt = JWTManager()
-bcrypt = Bcrypt()
-api = Api()  # Initialize Flask-RESTx
 
 def create_app():
     app = Flask(__name__)
-    load_dotenv()
-    
-    # Configure app
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
-    app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
-    
+    load_dotenv()  # Load environment variables
+
+    # Database configuration
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"mysql+mysqldb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+        f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    )
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
+
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
-    bcrypt.init_app(app)
-    api.init_app(app)  # Attach Flask-RESTx to the app
 
-    # Import models (for table creation)
-    from app.models import User, Account, Transaction
-
-    # Import and register namespaces (API routes)
-    from app.routes.users import users_ns
-    api.add_namespace(users_ns)
+    # Register blueprints
+    from app.routes.auth import auth_bp
+    from app.routes.accounts import accounts_bp
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(accounts_bp, url_prefix='/api/accounts')
 
     return app

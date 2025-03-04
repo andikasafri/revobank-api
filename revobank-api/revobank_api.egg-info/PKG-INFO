@@ -1,0 +1,9 @@
+Metadata-Version: 2.2
+Name: revobank-api
+Version: 0.1.0
+Requires-Dist: flask==3.0.2
+Requires-Dist: flask-jwt-extended==4.6.0
+Requires-Dist: flask-sqlalchemy==3.1.1
+Requires-Dist: sqlalchemy==2.0.25
+Requires-Dist: mysqlclient==2.2.7
+Requires-Dist: python-dotenv==1.0.1
