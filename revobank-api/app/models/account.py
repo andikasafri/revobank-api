@@ -1,5 +1,6 @@
 from app import db
 from sqlalchemy import CheckConstraint
+from datetime import datetime
 
 class Account(db.Model):
     __tablename__ = 'accounts'
@@ -10,19 +11,20 @@ class Account(db.Model):
     balance = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
-    
+    account_number = db.Column(db.String(20), unique=True, nullable=False)
+
     __table_args__ = (
         CheckConstraint(balance >= 0.00, name='non_negative_balance'),
+        CheckConstraint("account_number LIKE 'ACC-%%'", name='account_number_format')
     )
     
     def serialize(self):
         return {
             'id': self.id,
-            # 'user_id': self.user_id,
+            'user_id': self.user_id,
             'account_type': self.account_type,
             'account_number': self.account_number,
-            'balance': float(self.balance),
-            'created_at': self.created_at,
-            # 'updated_at': self.updated_at
+            'balance': str(self.balance),  # Maintain decimal precision
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-        

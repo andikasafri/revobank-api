@@ -4,6 +4,11 @@ Version: 0.1.0
 Requires-Dist: flask==3.0.2
 Requires-Dist: flask-jwt-extended==4.6.0
 Requires-Dist: flask-sqlalchemy==3.1.1
+Requires-Dist: flask-migrate==4.0.5
 Requires-Dist: sqlalchemy==2.0.25
 Requires-Dist: mysqlclient==2.2.7
 Requires-Dist: python-dotenv==1.0.1
+Requires-Dist: werkzeug==3.0.3
+Requires-Dist: pytest==7.4.0
+Requires-Dist: pytest-cov==4.1.0
+Requires-Dist: httpie==3.2.2
