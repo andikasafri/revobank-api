@@ -8,7 +8,7 @@ def test_app():
     app = create_app()
     app.config.update({
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'mysql+mysqldb://testuser:testpass@localhost/revobank_test',
+        'SQLALCHEMY_DATABASE_URI': 'mysql+mysqldb://testuser:testpass@localhost/revobank_tests',
         'JWT_SECRET_KEY': 'test_secret_key'
     })
     with app.app_context():
