@@ -1,7 +1,3 @@
-Below is an enhanced Markdown explanation that interleaves key code snippets for improved readability and visual clarity.
-
----
-
 # Detailed Technical Explanation with Code Snippets
 
 This documentation explains two Python API files used in a production application that leverages Flask, SQLAlchemy, and JWT-based authentication. One file defines the underlying data model for transactions, and the other provides endpoints to interact with these transactions.

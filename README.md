@@ -1,162 +1,344 @@
-# RevoBank Activity Diagrams Documentation
+# Revobank API
 
-**Module 6 Assignment | Deadline: 21 February 2025**
+Revobank API is a RESTful service built with Flask that provides endpoints for managing users, bank accounts, and financial transactions. The API uses JWT for secure authentication and follows RESTful principles for resource operations.
 
----
+## Table of Contents
 
-## Diagram Key / Legend
+- [Overview](#overview)
+- [Features](#features)
+- [Installation & Setup](#installation--setup)
+- [API Documentation](#api-documentation)
+  - [User Management](#user-management)
+    - [User Registration](#user-registration)
+    - [User Login](#user-login)
+    - [Get Current User Details](#get-current-user-details)
+    - [Update Current User](#update-current-user)
+    - [Delete Current User](#delete-current-user)
+  - [Account Management](#account-management)
+    - [Get All Accounts](#get-all-accounts)
+    - [Get Single Account](#get-single-account)
+    - [Create New Account](#create-new-account)
+    - [Update Account](#update-account)
+    - [Delete Account](#delete-account)
+  - [Transaction Management](#transaction-management)
+    - [Get All Transactions](#get-all-transactions)
+    - [Get Single Transaction](#get-single-transaction)
+    - [Create Transaction](#create-transaction)
+- [Additional Notes](#additional-notes)
+- [Deployment](#deployment)
+- [Grading Component (Module 7 Assignment)](#grading-component-module-7-assignment)
 
-Before diving into the details, please note the following symbols used in the diagrams:
+## Overview
 
-- **Start Event:** Represented by a filled circle; this marks the beginning of the process.
-- **End Event:** Represented by a circle with a thick border; this marks the conclusion of the process.
-- **Activity (Rectangle):** Used for actions or steps performed by either the user or the system.
-- **Decision (Diamond):** Indicates a point where a choice must be made (e.g., Yes/No), which directs the flow into different branches.
+Revobank API acts as the backbone for the RevoBank application by providing secure and efficient endpoints for:
 
-This legend ensures that the diagrams are easy to understand, even if you are not familiar with UML notation.
+- **User Management:** Creating users, authentication, profile retrieval, updates, and deletion.
+- **Account Management:** Creating and managing bank accounts.
+- **Transaction Management:** Deposits, withdrawals, transfers, and transaction history retrieval.
 
----
+## Features
 
-## 1. User Authentication Activity Diagram
+- **Secure Authentication:** Uses JWT via Flask-JWT-Extended.
+- **Robust Error Handling:** Validations for required fields, authorization checks, and proper HTTP status codes.
+- **RESTful Endpoints:** CRUD operations on users, accounts, and transactions.
+- **Data Integrity:** Enforced foreign key constraints and balance checks in transactions.
 
-**SVG File:**  
-![User Authentication Diagram](/Public/userauthentication.svg)
+## Installation & Setup
 
-<!-- _User Authentication Diagram - [View Full Size](/public/userauthentication.svg)_ -->
+1. **Clone the Repository:**
 
-### Diagram Overview
+   ```bash
+   git clone https://github.com/yourusername/revobank-api.git
+   cd revobank-api
+   ```
 
-This diagram visualizes the secure login workflow for RevoBank, including error handling, token generation, and password recovery.
+2. **Create a Virtual Environment and Install Dependencies:**
 
-### Key Steps & Processes
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-- **Start Node:** Initiates the authentication process.
-- **Input Credentials:**  
-  _User enters username/password (User action, Rectangle)._
-- **Verify Credentials:**  
-  _System checks validity (System action, Rectangle)._
-- **Decision: Valid Credentials?** _(Diamond)_
-  - **Yes:**
-    - **Generate Token:**  
-      _System issues a JWT/security token (System, Rectangle)._
-    - **Login Successful:**  
-      _User gains access (User, Rectangle)._
-  - **No:**
-    - **Display Error:**  
-      _System shows "Invalid Credentials" (System, Rectangle)._
-    - **Inform User:**  
-      _Additional warning about attempts (System, Rectangle)._
-    - **Decision: Exceeded Max Attempts?** _(Diamond)_
-      - **Yes:**  
-        _Prevent Further Login (System locks account, Rectangle)._
-      - **No:**  
-        _User chooses Retry or Forgot Password (Decision Diamond)._
-        - **Retry:** Loops back to **Input Credentials**.
-        - **Forgot Password:**
-          - **Enter Last Email:**  
-            _User provides recovery email (User, Rectangle)._
-          - **Send Recovery Link:**  
-            _System emails reset instructions (System, Rectangle)._
-          - **Reset Password:**  
-            _User creates a new password (System, Rectangle)._
-          - **Loop Back:**  
-            _User must re-enter credentials for verification (Security compliance)._
+3. **Set Environment Variables:**
 
-### Covered Requirements
+   Create a `.env` file or set your environment variables as needed:
 
-- ✅ **Login, Password Verification, Token Generation**
-- ✅ **Error Handling:** Invalid credentials, max attempts, recovery flow.
-- ✅ **Actors:** User (input actions) and System (verification, security).
+   ```bash
+   export DB_USER=<your_db_user>
+   export DB_PASSWORD=<your_db_password>
+   export DB_HOST=<your_db_host>
+   export DB_NAME=revobank
+   export DATABASE_URL="mysql+mysqldb://<your_db_user>:<your_db_password>@<your_db_host>/revobank?charset=utf8mb4"
+   export SECRET_KEY=<your_secret_key>
+   ```
 
----
+4. **Run Migrations:**
 
-## 2. Transaction Handling Activity Diagram
+   ```bash
+   flask db upgrade
+   ```
 
-**SVG File:**  
-![Transaction Handling Diagram](/Public/handletransaction.svg)
+5. **Start the Application:**
 
-<!-- _Transaction Handling Diagram - [View Full Size](/public/handletransaction.svg)_ -->
+   ```bash
+   flask run
+   ```
 
-### Diagram Overview
+## API Documentation
 
-This diagram maps transaction initiation, balance checks, payment confirmation, and error recovery.
+### User Management
 
-### Key Steps & Processes
+#### User Registration
 
-- **Start Node:** User begins a transaction.
-- **Authenticate User:** _(Decision)_
-  - **Yes:**  
-    _Proceed to transaction type selection._
-  - **No:**
-    - **Send Authenticator Email:**  
-      _System triggers 2FA (System, Rectangle)._
-    - **Verify Authentication:** _(Decision)_
-      - **Yes:**  
-        _Proceed to Select Transaction Type._
-      - **No:**  
-        _Retry Authenticator loops back to authentication._
-- **Select Transaction Type:**  
-  _(User selects the type of transaction, Rectangle)_
-  - **Credit Card:**  
-    _User inputs card details (Rectangle)._
-  - **Virtual Account:**
-    - **Choose Bank:**  
-      _User selects bank (Rectangle)._
-    - **Generate Virtual Account:**  
-      _System creates a temporary account (System, Rectangle)._
-- **Check Account Balance:** _(Decision)_
-  - **Yes:**
-    - **Process Transaction:**  
-      _Funds transfer (System, Rectangle)._
-    - **Update Balance:**  
-      _Adjust account (System, Rectangle)._
-    - **Record History:**  
-      _Log transaction (System, Rectangle)._
-    - **Confirm Success:**  
-      _User receives confirmation (User, Rectangle)._
-  - **No:**
-    - **Display Insufficient Funds:**  
-      _(System, Rectangle)._
-    - **Retry Transaction:**  
-      _User adjusts inputs (Loop back to Select Transaction Type)._
-- **Check Payment Confirmation:** _(Decision)_
-  - **Yes:**  
-    _Transaction ends successfully._
-  - **No:**
-    - **Retry Payment:**  
-      _System re-initiates payment (Rectangle)._
-    - **Wait Confirmation:**  
-      _System pauses for external validation (Rectangle)._
-    - **Loop Back:**  
-      _Re-checks confirmation status._
+- **Endpoint:** `POST /api/auth/users`
+- **Description:** Creates a new user account. Required fields: `username`, `email`, and `password`.
+- **Password Requirements:** Minimum 8 characters, one uppercase letter, and one special character (e.g., `!@#$%^&*()`).
 
-### Covered Requirements
+**Example (HTTPie):**
 
-- ✅ **Transaction Initiation:** Credit card and virtual account paths.
-- ✅ **Verification:** Balance checks, authentication, payment confirmation.
-- ✅ **Error Handling:** Insufficient funds, authentication retries.
-- ✅ **Actors:** User (selections/inputs) and System (processing/security).
+```bash
+http POST http://localhost:5000/api/auth/users \
+  username=user1 \
+  email=user1@example.com \
+  password=SecurePass123!
+```
 
----
+**Expected Response:**
 
-## UML Standards Compliance
+```json
+{
+  "message": "User created successfully"
+}
+```
 
-### Shapes
+You can create another user similarly:
 
-- **Rectangles:** All actions (e.g., Input Credentials, Generate Token).
-- **Diamonds:** Decisions (e.g., Valid Credentials?, Exceeded Max Attempts?).
-- **Start/End Nodes:** Clearly labeled.
+```bash
+http POST http://localhost:5000/api/auth/users \
+  username=user2 \
+  email=user2@example.com \
+  password=AnotherPass123!
+```
 
-### Actors
+#### User Login
 
-- Differentiated between User (gray) and System (blue) actions.
+- **Endpoint:** `POST /api/auth/login`
+- **Description:** Authenticates a user and returns an access token.
 
-### Flow Logic
+**Example (HTTPie for User1):**
 
-- Loops (e.g., authentication retries) use connectors, not ambiguous jumps.
-- All decision paths terminate at an End Node.
+```bash
+http POST http://localhost:5000/api/auth/login \
+  email=user1@example.com \
+  password=SecurePass123!
+```
 
----
+**Expected Response (sample):**
 
-Activate revobank-api virtual environment: ".\venv\Scripts\activate.ps1"
-To go into the Postgresssql "psql -d postgres -U postgres"
+```json
+{
+  "access_token": "<ACCESS_TOKEN>"
+}
+```
+
+#### Get Current User Details
+
+- **Endpoint:** `GET /api/auth/users/me`
+- **Description:** Retrieves the authenticated user’s profile.
+- **Header:** `Authorization: Bearer <ACCESS_TOKEN>`
+
+**Example (HTTPie):**
+
+```bash
+http GET http://localhost:5000/api/auth/users/me "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response (User1 sample):**
+
+```json
+{
+  "id": 3,
+  "username": "user1",
+  "email": "user1@example.com",
+  "created_at": "2025-03-10T00:12:07"
+}
+```
+
+#### Update Current User
+
+- **Endpoint:** `PUT /api/auth/users/me`
+- **Description:** Updates the authenticated user’s profile (e.g., email, password).
+
+**Example (Update Email):**
+
+```bash
+http PUT http://localhost:5000/api/auth/users/me \
+  "Authorization: Bearer <ACCESS_TOKEN>" \
+  email=newuser1@gmail.com
+```
+
+**Expected Response:**
+
+```json
+{
+  "message": "User updated successfully"
+}
+```
+
+#### Delete Current User
+
+- **Endpoint:** `DELETE /api/auth/users/me`
+- **Description:** Deletes the authenticated user’s account if no active accounts exist.
+
+**Example (HTTPie):**
+
+```bash
+http DELETE http://localhost:5000/api/auth/users/me "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+HTTP 204 No Content.
+
+### Account Management
+
+#### Get All Accounts
+
+- **Endpoint:** `GET /api/accounts`
+- **Description:** Retrieves all accounts belonging to the authenticated user.
+
+**Example (HTTPie):**
+
+```bash
+http GET http://localhost:5000/api/accounts "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+A JSON array of account objects.
+
+#### Get Single Account
+
+- **Endpoint:** `GET /api/accounts/:id`
+- **Description:** Retrieves details for a specific account (requires ownership).
+
+**Example (HTTPie):**
+
+```bash
+http GET http://localhost:5000/api/accounts/1 "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+Account details in JSON if the account belongs to the authenticated user.
+
+#### Create New Account
+
+- **Endpoint:** `POST /api/accounts`
+- **Description:** Creates a new bank account for the authenticated user.
+- **Required Fields:** `account_type` (must be one of `savings`, `checking`, or `investment`), and `account_number` (must start with `"ACC-"`).
+
+**Example (HTTPie):**
+
+```bash
+http POST http://localhost:5000/api/accounts \
+  "Authorization: Bearer <ACCESS_TOKEN>" \
+  account_type=savings \
+  account_number="ACC-1001"
+```
+
+**Expected Response:**
+The new account details in JSON with HTTP 201 Created.
+
+#### Update Account
+
+- **Endpoint:** `PUT /api/accounts/:id`
+- **Description:** Updates an account’s details (requires ownership).
+
+**Example (HTTPie):**
+
+```bash
+http PUT http://localhost:5000/api/accounts/1 \
+  "Authorization: Bearer <ACCESS_TOKEN>" \
+  account_type=checking \
+  account_number="ACC-12345"
+```
+
+**Expected Response:**
+Updated account details in JSON.
+
+#### Delete Account
+
+- **Endpoint:** `DELETE /api/accounts/:id`
+- **Description:** Deletes an account (requires ownership). Note that the account balance must be zero.
+
+**Example (HTTPie):**
+
+```bash
+http DELETE http://localhost:5000/api/accounts/1 \
+  "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+HTTP 204 No Content on success.
+
+### Transaction Management
+
+#### Get All Transactions
+
+- **Endpoint:** `GET /api/transactions`
+- **Description:** Retrieves all transactions for the authenticated user's accounts. Supports optional filters: `account_id`, `start_date`, and `end_date`.
+
+**Example (HTTPie):**
+
+```bash
+http GET http://localhost:5000/api/transactions "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+A JSON array of transaction objects.
+
+#### Get Single Transaction
+
+- **Endpoint:** `GET /api/transactions/:id`
+- **Description:** Retrieves details of a specific transaction (requires ownership of a related account).
+
+**Example (HTTPie):**
+
+```bash
+http GET http://localhost:5000/api/transactions/1 "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+**Expected Response:**
+Transaction details in JSON if authorized.
+
+#### Create Transaction
+
+- **Endpoint:** `POST /api/transactions`
+- **Description:** Initiates a new transaction. Transaction types can be `deposit`, `withdrawal`, or `transfer`.
+  - For a **deposit**, provide `to_account_id`.
+  - For a **withdrawal**, provide `from_account_id`.
+  - For a **transfer**, provide both `from_account_id` and `to_account_id`.
+
+**Example (Deposit Transaction using HTTPie):**
+
+```bash
+http POST http://localhost:5000/api/transactions \
+  "Authorization: Bearer <ACCESS_TOKEN>" \
+  type=deposit \
+  amount=1000.00 \
+  to_account_id=1 \
+  description="Initial deposit"
+```
+
+**Expected Response:**
+Transaction details in JSON with updated account balance.
+
+## Additional Notes
+
+- **JWT Tokens:**
+  Tokens are generated using Flask-JWT-Extended. The helper function converts user IDs to strings during token creation.
+- **Security & Validation:**
+  Endpoints enforce authorization checks to ensure that only resource owners can perform certain actions. Required fields and value formats are validated, and meaningful error messages with appropriate HTTP status codes are returned.
+- **Database Migrations:**
+  Use `flask db upgrade` to apply schema changes.
+- **Type Conversions:**
+  For financial calculations, amounts are converted to Decimal to ensure precision.
