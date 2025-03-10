@@ -20,7 +20,7 @@ def get_all_accounts():
     Security: Requires valid JWT token
     Response: List of user's accounts in JSON format
     """
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     accounts = Account.query.filter_by(user_id=current_user_id).all()
     return jsonify([acc.serialize() for acc in accounts]), 200
 
@@ -35,7 +35,7 @@ def get_single_account(account_id):
     Security: Requires ownership of the account
     Response: Account details in JSON format
     """
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     account = Account.query.get_or_404(account_id)
     
     if account.user_id != current_user_id:
@@ -55,7 +55,7 @@ def create_account():
     Security: Automatically sets user_id from JWT
     Response: Created account details
     """
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
 
     # Validate required fields
@@ -96,7 +96,7 @@ def update_account(account_id):
         
     Security: Requires account ownership
     """
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     account = Account.query.get_or_404(account_id)
     
     if account.user_id != current_user_id:
@@ -131,18 +131,33 @@ def update_account(account_id):
     db.session.commit()
     return jsonify(account.serialize()), 200
 
+# @accounts_bp.route('/<int:account_id>', methods=['DELETE'])
+# @jwt_required()
+# def delete_account(account_id):
+#     """Permanently delete an account
+    
+#     Restrictions:
+#         - Requires account ownership
+#         - Account balance must be zero
+        
+#     Response: 204 No Content
+#     """
+#     current_user_id = int(get_jwt_identity())
+#     account = Account.query.get_or_404(account_id)
+    
+#     if account.user_id != current_user_id:
+#         raise Forbidden("You don't have access to this account")
+    
+#     if account.balance != 0:
+#         raise BadRequest("Cannot delete account with non-zero balance")
+
+#     db.session.delete(account)
+#     db.session.commit()
+#     return "", 204  # Proper 204 response with empty body
 @accounts_bp.route('/<int:account_id>', methods=['DELETE'])
 @jwt_required()
 def delete_account(account_id):
-    """Permanently delete an account
-    
-    Restrictions:
-        - Requires account ownership
-        - Account balance must be zero
-        
-    Response: 204 No Content
-    """
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     account = Account.query.get_or_404(account_id)
     
     if account.user_id != current_user_id:
@@ -151,6 +166,13 @@ def delete_account(account_id):
     if account.balance != 0:
         raise BadRequest("Cannot delete account with non-zero balance")
 
+    # try:
     db.session.delete(account)
     db.session.commit()
-    return "", 204  # Proper 204 response with empty body
+    # except IntegrityError as e:
+    #     db.session.rollback()
+    #     if "foreign key constraint" in str(e.orig).lower():
+    #         raise Conflict("Account has associated transactions - delete them first")
+    #     raise InternalServerError("Database error occurred")
+    
+    return "", 204

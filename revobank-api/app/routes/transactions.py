@@ -5,13 +5,14 @@ from app.models.transaction import Transaction
 from app import db
 from werkzeug.exceptions import NotFound, Forbidden, BadRequest
 from datetime import datetime
+from decimal import Decimal
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/api/transactions')
 
 @transactions_bp.route('', methods=['GET'])
 @jwt_required()
 def get_all_transactions():
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     args = request.args
 
     # Base query to find transactions where user owns either account
@@ -20,7 +21,7 @@ def get_all_transactions():
         (Account.id == Transaction.to_account_id)
     )).filter(Account.user_id == current_user_id)
 
-    # Apply filters
+    # Apply filters if provided
     if 'account_id' in args:
         account_id = int(args['account_id'])
         query = query.filter(
@@ -42,7 +43,7 @@ def get_all_transactions():
 @transactions_bp.route('/<int:transaction_id>', methods=['GET'])
 @jwt_required()
 def get_transaction(transaction_id):
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     transaction = Transaction.query.get_or_404(transaction_id)
 
     # Check if user owns at least one related account
@@ -60,7 +61,7 @@ def get_transaction(transaction_id):
 @transactions_bp.route('', methods=['POST'])
 @jwt_required()
 def create_transaction():
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
 
     # Validate required fields
@@ -94,34 +95,36 @@ def create_transaction():
 
     if 'to_account_id' in data:
         to_account = Account.query.get_or_404(data['to_account_id'])
-        # Allow transfers to other users' accounts
+        # Allow transfers to other users' accounts but deposits must be to your own account
         if data['type'] != 'transfer' and to_account.user_id != current_user_id:
             raise Forbidden("Invalid destination account")
 
-    # Check sufficient funds
+    # Check sufficient funds for withdrawals or transfers
     if data['type'] in ['withdrawal', 'transfer']:
-        if from_account.balance < data['amount']:
+        if from_account.balance < Decimal(data['amount']):
             raise BadRequest("Insufficient funds")
 
-    # Create transaction
+    # Convert amount from string to Decimal for arithmetic
+    amount = Decimal(data['amount'])
+
+    # Create transaction and update balances
     try:
         transaction = Transaction(
             type=data['type'],
-            amount=data['amount'],
+            amount=amount,
             from_account_id=data.get('from_account_id'),
             to_account_id=data.get('to_account_id'),
             description=data.get('description')
         )
         db.session.add(transaction)
 
-        # Update balances
         if data['type'] == 'deposit':
-            to_account.balance += data['amount']
+            to_account.balance += amount
         elif data['type'] == 'withdrawal':
-            from_account.balance -= data['amount']
+            from_account.balance -= amount
         elif data['type'] == 'transfer':
-            from_account.balance -= data['amount']
-            to_account.balance += data['amount']
+            from_account.balance -= amount
+            to_account.balance += amount
 
         db.session.commit()
     except Exception as e:

@@ -22,14 +22,19 @@ def create_app():
     print(f"✅ Loaded JWT_SECRET_KEY: {jwt_secret}")
 
     # Database configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"mysql+mysqldb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
-        f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-    )
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URL',
+    f"mysql+mysqldb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+    f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
+)
+    # app.config['SQLALCHEMY_DATABASE_URI'] = (
+    #     f"mysql+mysqldb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+    #     f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    # )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config["JWT_ALGORITHM"] = "HS256"
     app.config['JWT_SECRET_KEY'] = jwt_secret
-    # app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
     # Initialize extensions
     db.init_app(app)

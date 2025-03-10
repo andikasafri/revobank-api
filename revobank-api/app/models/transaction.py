@@ -9,8 +9,8 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)  # deposit, withdrawal, transfer
     amount = db.Column(db.Numeric(10, 2), nullable=False)
-    from_account_id = db.Column(db.Integer, ForeignKey('accounts.id'), nullable=True)
-    to_account_id = db.Column(db.Integer, ForeignKey('accounts.id'), nullable=True)
+    from_account_id = db.Column(db.Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True)
+    to_account_id = db.Column(db.Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True)
     description = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
