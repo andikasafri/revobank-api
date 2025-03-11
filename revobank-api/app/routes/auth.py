@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.services.auth import generate_token
+from app.models.account import Account
 from app import db
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -43,7 +44,9 @@ def register():
 @jwt_required()
 def get_current_user():
     current_user_id = get_jwt_identity()
-    user = User.query.get_or_404(current_user_id)
+    user = db.session.get(User, current_user_id)
+    if user is None:
+        raise NotFound("User not found")
     return jsonify({
         'id': user.id,
         'username': user.username,
@@ -55,7 +58,9 @@ def get_current_user():
 @jwt_required()
 def update_current_user():
     current_user_id = get_jwt_identity()
-    user = User.query.get_or_404(current_user_id)
+    user = db.session.get(User, current_user_id)
+    if user is None:
+        raise NotFound("User not found")
     data = request.get_json()
 
     if 'email' in data:
@@ -96,7 +101,7 @@ def delete_current_user():
     if user is None:
         raise NotFound("User not found")
     
-    if user.accounts:
+    if db.session.query(Account).filter_by(user_id=current_user_id).first():
         raise BadRequest("Cannot delete user with active accounts")
     
     db.session.delete(user)

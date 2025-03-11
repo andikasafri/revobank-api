@@ -51,19 +51,3 @@ def create_app(config_name=None):
     app.register_blueprint(transactions_bp)
 
     return app
-
-# =============================================================================
-# Archived Code (Keep for reference, remove in production)
-# =============================================================================
-# Alternative database configuration format:
-# app.config['SQLALCHEMY_DATABASE_URI'] = (
-#     f"mysql+mysqldb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
-#     f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-# )
-
-# Previous JWT debug statement:
-# print(f"✅ Loaded JWT_SECRET_KEY: {jwt_secret}")
-
-# Unprefixed blueprint registration examples:
-# app.register_blueprint(auth_bp)
-# app.register_blueprint(accounts_bp)

@@ -2,17 +2,20 @@ import pytest
 from app import create_app, db
 from app.models.user import User
 from app.models.account import Account
+from sqlalchemy import event
 
 @pytest.fixture(scope='session')
 def app():
     """Create and configure a new app instance for tests."""
-    app = create_app()
-    app.config.update({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
-        'JWT_SECRET_KEY': 'test-secret-key'
-    })
+    app = create_app('testing')  # Pass 'testing' to use SQLite
     with app.app_context():
+        # Set up SQLite foreign key support if using SQLite
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+            @event.listens_for(db.engine, "connect")
+            def set_sqlite_pragma(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA foreign_keys=ON")
+                cursor.close()
         yield app
 
 @pytest.fixture(scope='function')
@@ -40,7 +43,7 @@ def init_database(app):
             user_id=user.id,
             account_type='savings',
             account_number='ACC-123456',
-            balance=1000.00  # Non-zero balance for tests like delete_account_with_balance
+            balance=1000.00
         )
         db.session.add(account)
         db.session.commit()
@@ -59,4 +62,3 @@ def auth_tokens(test_client, init_database):
     return {
         'access_token': response.json['access_token']
     }
-    
