@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.services.auth import generate_token
 from app import db
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -92,7 +92,9 @@ def login():
 def delete_current_user():
     """Delete authenticated user's account if no active accounts exist"""
     current_user_id = get_jwt_identity()
-    user = User.query.get_or_404(current_user_id)
+    user = db.session.get(User, current_user_id)
+    if user is None:
+        raise NotFound("User not found")
     
     if user.accounts:
         raise BadRequest("Cannot delete user with active accounts")

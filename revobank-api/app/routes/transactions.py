@@ -44,7 +44,9 @@ def get_all_transactions():
 @jwt_required()
 def get_transaction(transaction_id):
     current_user_id = int(get_jwt_identity())
-    transaction = Transaction.query.get_or_404(transaction_id)
+    transaction = db.session.get(Transaction, transaction_id)
+    if transaction is None:
+        raise NotFound("Transaction not found")
 
     # Check if user owns at least one related account
     has_access = False
@@ -89,12 +91,16 @@ def create_transaction():
 
     # Load and validate accounts
     if 'from_account_id' in data:
-        from_account = Account.query.get_or_404(data['from_account_id'])
+        from_account = db.session.get(Account, data['from_account_id'])
+        if from_account is None:
+            raise NotFound("Source account not found")
         if from_account.user_id != current_user_id:
             raise Forbidden("You don't own the source account")
 
     if 'to_account_id' in data:
-        to_account = Account.query.get_or_404(data['to_account_id'])
+        to_account = db.session.get(Account, data['to_account_id'])
+        if to_account is None:
+            raise NotFound("Destination account not found")
         # Allow transfers to other users' accounts but deposits must be to your own account
         if data['type'] != 'transfer' and to_account.user_id != current_user_id:
             raise Forbidden("Invalid destination account")

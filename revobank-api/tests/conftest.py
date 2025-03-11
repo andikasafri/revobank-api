@@ -3,24 +3,27 @@ from app import create_app, db
 from app.models.user import User
 from app.models.account import Account
 
-@pytest.fixture(scope='module')
-def test_app():
+@pytest.fixture(scope='session')
+def app():
+    """Create and configure a new app instance for tests."""
     app = create_app()
     app.config.update({
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'mysql+mysqldb://testuser:testpass@localhost/revobank_tests',
-        'JWT_SECRET_KEY': 'test_secret_key'
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'JWT_SECRET_KEY': 'test-secret-key'
     })
     with app.app_context():
         yield app
 
-@pytest.fixture(scope='module')
-def test_client(test_app):
-    return test_app.test_client()
+@pytest.fixture(scope='function')
+def test_client(app):
+    """Create a test client for making HTTP requests."""
+    return app.test_client()
 
-@pytest.fixture(scope='module')
-def init_database(test_app):
-    with test_app.app_context():
+@pytest.fixture(scope='function')
+def init_database(app):
+    with app.app_context():
+        db.drop_all()
         db.create_all()
         
         # Create test user
@@ -30,23 +33,25 @@ def init_database(test_app):
         )
         user.set_password('TestPass123!')
         db.session.add(user)
+        db.session.commit()
         
         # Create test account
         account = Account(
-            user_id=1,
-            account_type='checking',
+            user_id=user.id,
+            account_type='savings',
             account_number='ACC-123456',
-            balance=1000.00
+            balance=1000.00  # Non-zero balance for tests like delete_account_with_balance
         )
         db.session.add(account)
-        
         db.session.commit()
+        
         yield db
+        db.session.remove()
         db.drop_all()
 
-@pytest.fixture(scope='module')
-def auth_tokens(test_client):
-    # Get JWT token
+@pytest.fixture(scope='function')
+def auth_tokens(test_client, init_database):
+    """Get JWT tokens for authenticated requests."""
     response = test_client.post('/api/auth/login', json={
         'email': 'test@revobank.com',
         'password': 'TestPass123!'
@@ -54,3 +59,4 @@ def auth_tokens(test_client):
     return {
         'access_token': response.json['access_token']
     }
+    
