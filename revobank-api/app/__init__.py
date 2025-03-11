@@ -1,9 +1,10 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+from werkzeug.exceptions import HTTPException
 
 db = SQLAlchemy()
 jwt = JWTManager()
@@ -31,6 +32,13 @@ def create_app(config_name=None):
             f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
         )
 
+    @app.errorhandler(HTTPException)
+    def handle_exception(e):
+        return jsonify({
+            'description': e.description,
+            'code': e.code
+        }), e.code
+    
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)

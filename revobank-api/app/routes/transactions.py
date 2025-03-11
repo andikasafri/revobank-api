@@ -6,6 +6,7 @@ from app import db
 from werkzeug.exceptions import NotFound, Forbidden, BadRequest
 from datetime import datetime
 from decimal import Decimal
+from decimal import InvalidOperation
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/api/transactions')
 
@@ -75,9 +76,19 @@ def create_transaction():
     if data['type'] not in ['deposit', 'withdrawal', 'transfer']:
         raise BadRequest("Invalid transaction type")
 
+    # Convert and validate amount
+    try:
+        amount = Decimal(data['amount'])
+    except InvalidOperation:
+        raise BadRequest("Invalid amount format")
+    
+    if amount <= 0:
+        raise BadRequest("Amount must be positive")
+
     # Validate accounts based on type
     from_account = None
     to_account = None
+
 
     if data['type'] == 'transfer':
         if not data.get('from_account_id') or not data.get('to_account_id'):
@@ -136,5 +147,5 @@ def create_transaction():
     except Exception as e:
         db.session.rollback()
         raise BadRequest(f"Transaction failed: {str(e)}")
-
+    
     return jsonify(transaction.serialize()), 201
