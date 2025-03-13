@@ -59,3 +59,6 @@ def create_app(config_name=None):
     app.register_blueprint(transactions_bp)
 
     return app
+
+# Expose the app for Gunicorn
+app = create_app()
