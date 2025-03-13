@@ -16,5 +16,6 @@ setup(
         "pytest==7.4.0",
         "pytest-cov==4.1.0",
         "httpie==3.2.2"
+        "gunicorn==20.1.0"
     ],
 )

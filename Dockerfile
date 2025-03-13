@@ -17,4 +17,4 @@ RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
 COPY revobank-api/ .
 RUN pip install --no-deps -r requirements.txt || true
 RUN pip install -e .
-CMD ["flask", "--app", "app", "run", "--port", "8000", "--reload", "--debug", "--host", "0.0.0.0"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
