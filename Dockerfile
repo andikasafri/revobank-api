@@ -15,8 +15,8 @@ WORKDIR /flask_app
 # Ensure the paths are correct and the files exist in the repository
 COPY requirements.txt pyproject.toml setup.py app/.env ./
 
-RUN --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+RUN --mount=type=bind,source=uv.lock,target=/flask_app/uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=/flask_app/pyproject.toml \
     uv sync --frozen --no-install-project
 
 COPY . .
