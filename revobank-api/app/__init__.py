@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -38,7 +39,15 @@ def create_app(config_name=None):
             'description': e.description,
             'code': e.code
         }), e.code
-    
+
+    @app.errorhandler(Exception)
+    def handle_generic_exception(e):
+        app.logger.error(f"An error occurred: {str(e)}")
+        return jsonify({
+            'description': 'An internal error occurred.',
+            'code': 500
+        }), 500
+
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
@@ -58,7 +67,18 @@ def create_app(config_name=None):
     app.register_blueprint(accounts_bp, url_prefix='/api/accounts')
     app.register_blueprint(transactions_bp)
 
+    # Add a root route
+    @app.route('/')
+    def home():
+        return jsonify({"message": "Welcome to Revobank API!"})
+
     return app
 
 # Expose the app for Gunicorn
 app = create_app()
+
+# Configure logging
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)

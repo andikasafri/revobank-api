@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  mysql-container:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: revobank
+      MYSQL_USER: revouser
+      MYSQL_PASSWORD: SecurePass123!
+    ports:
+      - "8001:8001"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  revobank-api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql-container
+    environment:
+      DB_HOST: mysql-container
+      DB_NAME: revobank
+      DB_USER: revouser
+      DB_PASSWORD: SecurePass123!
+      JWT_SECRET_KEY: super_secret_key_123
+
+volumes:
+  mysql-data:
