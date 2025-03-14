@@ -8,10 +8,10 @@ then
 fi
 
 # Wait for MySQL to be ready
-until nc -z mysql-container 3306; do
-  echo "Waiting for MySQL..."
-  sleep 1
-done
+# until nc -z mysql-container 3306; do
+#   echo "Waiting for MySQL..."
+#   sleep 1
+# done
 
 # Run database migrations
 flask db upgrade
