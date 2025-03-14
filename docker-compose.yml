@@ -36,13 +36,6 @@ services:
       DB_USER: revouser
       DB_PASSWORD: SecurePass123!
       JWT_SECRET_KEY: super_secret_key_123
-    entrypoint:
-      [
-        "/usr/local/bin/wait-for-it.sh",
-        "mysql-container:3306",
-        "--",
-        "flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app",
-      ]
     networks:
       - revobank-network
 
