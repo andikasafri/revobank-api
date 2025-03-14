@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/nc /usr/local/bin/nc
 
+RUN nc -h || echo "nc installation failed"
+
 COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
 
 WORKDIR /flask_app
@@ -25,9 +27,9 @@ RUN pip install --default-timeout=100 --no-cache-dir --no-deps -r requirements.t
     pip install --default-timeout=100 --no-cache-dir -e . && \
     pip install --default-timeout=100 --no-cache-dir gunicorn
 
-COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
-RUN chmod +x /usr/local/bin/wait-for-it.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENV PYTHONPATH=/flask_app/revobank-api
 
-CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 --timeout=30 -- flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
+CMD ["/usr/local/bin/entrypoint.sh"]
