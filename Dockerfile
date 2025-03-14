@@ -34,4 +34,4 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 ENV PYTHONPATH=/flask_app/revobank-api
 
-CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 --timeout=30 -- flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
+CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 --timeout=30 flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
