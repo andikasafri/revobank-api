@@ -10,13 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/nc /usr/local/bin/nc
 
-
 COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
 
 WORKDIR /flask_app
 
 # Ensure the paths are correct and the files exist in the repository
-COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/.env ./
+COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/app/.env ./
 
 RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
     --mount=type=bind,source=revobank-api/pyproject.toml,target=pyproject.toml \
