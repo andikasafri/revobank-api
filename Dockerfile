@@ -5,8 +5,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libmariadb-dev \
     pkg-config \
+    netcat-traditional \
     wait-for-it && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    ln -sf /usr/bin/nc /usr/local/bin/nc
+
 
 COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
 
