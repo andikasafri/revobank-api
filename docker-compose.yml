@@ -18,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - revobank-network
 
   revobank-api:
     build:
@@ -41,6 +43,11 @@ services:
         "--",
         "flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app",
       ]
+    networks:
+      - revobank-network
 
 volumes:
   mysql-data:
+
+networks:
+  revobank-network:
