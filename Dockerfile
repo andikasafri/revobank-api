@@ -15,7 +15,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
 WORKDIR /flask_app
 
 # Ensure the paths are correct and the files exist in the repository
-COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/app/.env ./
+COPY requirements.txt pyproject.toml setup.py app/.env ./
+
 
 RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
     --mount=type=bind,source=revobank-api/pyproject.toml,target=pyproject.toml \
