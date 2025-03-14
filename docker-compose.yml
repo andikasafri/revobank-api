@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 
 services:
   mysql-container:
@@ -10,22 +10,35 @@ services:
       MYSQL_USER: revouser
       MYSQL_PASSWORD: SecurePass123!
     ports:
-      - "8001:8001"
+      - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   revobank-api:
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - mysql-container
+      mysql-container:
+        condition: service_healthy
     environment:
       DB_HOST: mysql-container
       DB_NAME: revobank
       DB_USER: revouser
       DB_PASSWORD: SecurePass123!
       JWT_SECRET_KEY: super_secret_key_123
+    entrypoint:
+      [
+        "./wait-for-it.sh",
+        "mysql-container:3306",
+        "--",
+        "your-api-start-command",
+      ]
 
 volumes:
   mysql-data:
