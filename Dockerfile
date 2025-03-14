@@ -17,8 +17,6 @@ WORKDIR /flask_app
 # Ensure the paths are correct and the files exist in the repository
 COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/app/.env ./
 
-
-
 RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
     --mount=type=bind,source=revobank-api/pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project
@@ -34,4 +32,4 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 ENV PYTHONPATH=/flask_app/revobank-api
 
-CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 --timeout=30 flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
+CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 --timeout=30 && flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
