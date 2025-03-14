@@ -24,9 +24,10 @@ RUN pip install --default-timeout=100 --no-cache-dir --no-deps -r requirements.t
     pip install --default-timeout=100 --no-cache-dir -e . && \
     pip install --default-timeout=100 --no-cache-dir gunicorn
 
+# Ensure the wait-for-it.sh script is in the root directory of your project
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 ENV PYTHONPATH=/flask_app/revobank-api
 
-CMD ["sh", "-c", "wait-for-it.sh mysql-container:3306 -- flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
+CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 -- flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]

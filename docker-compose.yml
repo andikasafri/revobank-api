@@ -1,4 +1,4 @@
-# version: "3.8"
+version: "3.8"
 
 services:
   mysql-container:
@@ -10,7 +10,7 @@ services:
       MYSQL_USER: revouser
       MYSQL_PASSWORD: SecurePass123!
     ports:
-      - "3307:3306"
+      - "3000:3000"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -34,10 +34,10 @@ services:
       JWT_SECRET_KEY: super_secret_key_123
     entrypoint:
       [
-        "./wait-for-it.sh",
+        "/usr/local/bin/wait-for-it.sh",
         "mysql-container:3306",
         "--",
-        "your-api-start-command",
+        "flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app",
       ]
 
 volumes:
