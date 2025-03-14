@@ -10,7 +10,7 @@ services:
       MYSQL_USER: revouser
       MYSQL_PASSWORD: SecurePass123!
     ports:
-      - "3000:3000"
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
