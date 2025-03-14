@@ -12,13 +12,14 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
 
 WORKDIR /flask_app
 
-COPY requirements.txt pyproject.toml setup.py .env ./
+# Ensure the paths are correct and the files exist in the repository
+COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/app/.env ./
 
-RUN --mount=type=bind,source=uv.lock,target=/flask_app/uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=/flask_app/pyproject.toml \
+RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
+    --mount=type=bind,source=revobank-api/pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project
 
-COPY . .
+COPY revobank-api/ .
 
 RUN pip install --default-timeout=100 --no-cache-dir --no-deps -r requirements.txt || true && \
     pip install --default-timeout=100 --no-cache-dir -e . && \
@@ -27,6 +28,6 @@ RUN pip install --default-timeout=100 --no-cache-dir --no-deps -r requirements.t
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
-ENV PYTHONPATH=/flask_app
+ENV PYTHONPATH=/flask_app/revobank-api
 
 CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql-container:3306 -- flask db upgrade && gunicorn --bind 0.0.0.0:8000 app:app"]
