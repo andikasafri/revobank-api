@@ -68,9 +68,11 @@ def register():
     except BadRequest as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Database error: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Failed to create user"}), 500
+        current_app.logger.exception("Registration error")  # Add detailed logging
+        return jsonify({
+            "error": "Failed to create user",
+            "details": str(e) if current_app.debug else None
+        }), 500
 
 @auth_bp.route('/users/me', methods=['GET'])
 @jwt_required()

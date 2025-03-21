@@ -30,14 +30,15 @@ def create_app(config_name=None):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         app.config['TESTING'] = True
     else:
-        # Production configuration using SSL
+        # Production configuration using SSL from environment
+        ssl_mode = os.getenv('DB_SSL_MODE', 'require')
         connection_str = (
             f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
             f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME')}"
-            "?sslmode=verify-full"
+            f"?sslmode={ssl_mode}"
         )
         app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
-        app.logger.info(f"Connecting to production database at {os.getenv('DB_HOST')}")
+        app.logger.info(f"Connecting to database at {os.getenv('DB_HOST')} with SSL mode: {ssl_mode}")
 
     @app.errorhandler(HTTPException)
     def handle_exception(e):
@@ -49,6 +50,7 @@ def create_app(config_name=None):
     @app.errorhandler(Exception)
     def handle_generic_exception(e):
         app.logger.error(f"An error occurred: {str(e)}")
+        app.logger.exception(e)  # This will log the full stack trace
         return jsonify({
             'description': 'An internal error occurred.',
             'code': 500
