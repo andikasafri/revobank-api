@@ -15,21 +15,15 @@ RUN pip install gunicorn
 
 # Copy application code
 COPY revobank-api/app/ app/
-COPY revobank-api/ migrations/
 COPY revobank-api/app/.env .env
 
-# Create migrations directory if it doesn't exist
-RUN mkdir -p migrations/versions
-
-# Copy and setup entrypoint with proper line endings
+# Copy and setup entrypoint
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && \
-    sed -i 's/\r$//' /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Set Python path
 ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
-ENTRYPOINT ["/bin/bash"]
 CMD ["/entrypoint.sh"]

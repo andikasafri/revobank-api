@@ -1,21 +1,35 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
 .Python
 *.pyc
-*.pyo
-*.pyd
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Virtual Environment
-.env
-.env.*
 .venv
 env/
 venv/
 ENV/
-.python-version
 
 # Testing
 .coverage
@@ -26,46 +40,22 @@ htmlcov/
 coverage.xml
 *.cover
 
-# IDEs and editors
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 .DS_Store
-*.sublime-workspace
-*.sublime-project
 
 # Local development
 *.log
 *.sqlite3
 *.db
-.git
-.gitignore
 
-# Build
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Docker
-Dockerfile
-docker-compose.yml
-.docker/
-
-# Documentation
-docs/
-*.md
-LICENSE
-
-# Test configuration
-tests/.env.test
-.env.test
-
-# SSL
+# SSL Certificates
 *.pem
 *.crt
 
-# Migrations
+# Keep migrations folder but ignore versions
 migrations/versions/*
 !migrations/versions/.gitkeep
