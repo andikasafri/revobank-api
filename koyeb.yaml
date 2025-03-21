@@ -1,0 +1,37 @@
+app:
+  name: revobank-api
+  services:
+    - name: web
+      git:
+        repository: https://github.com/andikasafri/revobank-api.git
+        branch: main
+      build:
+        dockerfile: Dockerfile
+      ports:
+        - port: 8000
+          http: true
+      healthcheck:
+        path: /health
+        interval: 15s
+        timeout: 5s
+        retries: 3
+      env:
+        - name: FLASK_ENV
+          value: production
+
+name: revobank-api
+service:
+  ports:
+    - port: 8000
+      protocol: http
+  routes:
+    - path: /
+      public: true
+  healthcheck:
+    path: /
+    interval: 15s
+    timeout: 5s
+    retries: 3
+  env:
+    - name: FLASK_ENV
+      value: production

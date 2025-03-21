@@ -1,3 +1,71 @@
-.qodo
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.env
+.env.*
+.venv
+env/
+venv/
+ENV/
+.python-version
+
+# Testing
 .coverage
-.pytest_cache
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Local development
+*.log
+*.sqlite3
+*.db
+.git
+.gitignore
+
+# Build
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Docker
+Dockerfile
+docker-compose.yml
+.docker/
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Test configuration
+tests/.env.test
+.env.test
+
+# SSL
+*.pem
+*.crt
+
+# Migrations
+migrations/versions/*
+!migrations/versions/.gitkeep

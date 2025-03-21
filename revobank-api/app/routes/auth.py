@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.services.auth import generate_token
@@ -18,27 +18,59 @@ def handle_not_found(e):
 
 @auth_bp.route('/users', methods=['POST'])
 def register():
-    data = request.get_json()
-    required_fields = ['username', 'email', 'password']
-    
-    if not all(field in data for field in required_fields):
-        raise BadRequest("Missing required fields")
-
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({"error": "Username already exists"}), 409
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "Email already exists"}), 409
-
-    new_user = User(username=data['username'], email=data['email'])
-    
     try:
-        new_user.set_password(data['password'])
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        current_app.logger.info("Attempting to register new user")
+        data = request.get_json()
+        current_app.logger.debug(f"Received registration data: {data}")
         
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"message": "User created successfully"}), 201
+        required_fields = ['username', 'email', 'password']
+        missing_fields = [field for field in required_fields if field not in data]
+        
+        if missing_fields:
+            return jsonify({
+                "error": "Missing required fields",
+                "missing_fields": missing_fields
+            }), 400
+
+        # Validate email format
+        if '@' not in data['email']:
+            raise BadRequest("Invalid email format")
+
+        # Check existing user with better error messages
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({"error": "Username already exists", "field": "username"}), 409
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({"error": "Email already exists", "field": "email"}), 409
+
+        new_user = User(username=data['username'], email=data['email'])
+        new_user.set_password(data['password'])
+        
+        current_app.logger.info(f"Creating new user with username: {data['username']}")
+        db.session.add(new_user)
+        db.session.commit()
+        current_app.logger.info(f"Successfully created user in database. User ID: {new_user.id}")
+        
+        response_data = {
+            "message": "User created successfully",
+            "user": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "email": new_user.email,
+                "created_at": new_user.created_at.isoformat()
+            }
+        }
+        current_app.logger.info(f"Sending response: {response_data}")
+        return jsonify(response_data), 201
+
+    except ValueError as e:
+        # Password validation errors
+        return jsonify({"error": str(e), "field": "password"}), 400
+    except BadRequest as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Database error: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": "Failed to create user"}), 500
 
 @auth_bp.route('/users/me', methods=['GET'])
 @jwt_required()

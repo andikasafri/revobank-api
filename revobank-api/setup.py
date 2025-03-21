@@ -10,7 +10,7 @@ setup(
         "flask-sqlalchemy==3.1.1",
         "flask-migrate==4.0.5",
         "sqlalchemy==2.0.25",
-        "mysqlclient==2.2.7",
+        "psycopg2-binary==2.9.6",
         "python-dotenv==1.0.1",
         "werkzeug==3.0.3",
         "pytest==7.4.0",

@@ -1,6 +1,29 @@
 # Revobank API
 
-Revobank API is a RESTful service built with Flask that provides endpoints for managing users, bank accounts, and financial transactions. The API uses JWT for secure authentication and follows RESTful principles for resource operations.
+A Flask-based REST API for banking operations.
+
+## Features
+
+- User Authentication (JWT)
+- Account Management
+- Transaction Processing
+- PostgreSQL Database (Supabase)
+
+## Deployment
+
+1. Set environment variables in Koyeb
+2. Enable auto-deployment from GitHub
+3. Configure health checks
+4. Set up proper logging
+
+## Environment Variables Required
+
+- `DB_HOST`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `JWT_SECRET_KEY`
+- `FLASK_ENV`
 
 ## Table of Contents
 

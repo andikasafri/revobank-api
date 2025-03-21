@@ -21,7 +21,7 @@ def test_update_account_type_success(test_client, auth_tokens, init_database):
         'account_type': 'checking'
     }, headers=headers)
     assert response.status_code == 200
-    updated_account = Account.query.get(1)
+    updated_account = db.session.get(Account, 1)
     assert updated_account.account_type == 'checking'
 
 def test_update_account_number_success(test_client, auth_tokens, init_database):
@@ -30,7 +30,7 @@ def test_update_account_number_success(test_client, auth_tokens, init_database):
         'account_number': 'ACC-UPDATED'
     }, headers=headers)
     assert response.status_code == 200
-    updated_account = Account.query.get(1)
+    updated_account = db.session.get(Account, 1)
     assert updated_account.account_number == 'ACC-UPDATED'
 
 def test_update_non_existent_account(test_client, auth_tokens, init_database):
@@ -53,7 +53,7 @@ def test_delete_account_success(test_client, auth_tokens, init_database):
     headers = {'Authorization': f'Bearer {auth_tokens["access_token"]}'}
     response = test_client.delete(f'/api/accounts/{new_account.id}', headers=headers)
     assert response.status_code == 204
-    assert Account.query.get(new_account.id) is None
+    assert db.session.get(Account, new_account.id) is None
 
 def test_delete_non_existent_account(test_client, auth_tokens, init_database):
     headers = {'Authorization': f'Bearer {auth_tokens["access_token"]}'}

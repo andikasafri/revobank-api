@@ -58,7 +58,6 @@ def test_delete_user(test_client, init_database):
     delete_response = test_client.delete('/api/auth/users/me', headers=headers)
     assert delete_response.status_code == 204, "User deletion failed"
 
-# --- New Tests for 100% Coverage ---
 
 # Test registration with missing fields (covers line 24 and triggers line 12)
 def test_register_missing_fields(test_client, init_database):

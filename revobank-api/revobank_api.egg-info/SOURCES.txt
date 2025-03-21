@@ -1,4 +1,5 @@
 pyproject.toml
+setup.py
 app/__init__.py
 app/models/account.py
 app/models/transaction.py

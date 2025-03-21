@@ -1,35 +1,34 @@
 FROM python:3.11-slim-bookworm
 
+WORKDIR /app
+
+# Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
-    libmariadb-dev \
-    pkg-config \
-    netcat-traditional \
-    && rm -rf /var/lib/apt/lists/* && \
-    ln -sf /usr/bin/nc /usr/local/bin/nc
+    && rm -rf /var/lib/apt/lists/*
 
-RUN nc -h || echo "nc installation failed"
+# Copy requirements and install dependencies
+COPY requirements.txt . 
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
 
-COPY --from=ghcr.io/astral-sh/uv:0.6.4 /uv /bin/uv
+# Copy application code
+COPY revobank-api/app/ app/
+COPY migrations/ migrations/
+COPY revobank-api/app/.env .env
 
-WORKDIR /flask_app
+# Copy and setup entrypoint with proper line endings
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    # Convert Windows line endings to Unix
+    sed -i 's/\r$//' /entrypoint.sh
 
-COPY revobank-api/requirements.txt revobank-api/pyproject.toml revobank-api/setup.py revobank-api/app/.env ./
+# Set Python path
+ENV PYTHONPATH=/app
 
-RUN --mount=type=bind,source=revobank-api/uv.lock,target=uv.lock \
-    --mount=type=bind,source=revobank-api/pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+EXPOSE 8000
 
-COPY revobank-api/ .
-
-RUN pip install --default-timeout=100 --no-cache-dir --no-deps -r requirements.txt || true && \
-    pip install --default-timeout=100 --no-cache-dir -e . && \
-    pip install --default-timeout=100 --no-cache-dir gunicorn
-
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-ENV PYTHONPATH=/flask_app/revobank-api
-
-CMD ["/usr/local/bin/entrypoint.sh"]
+# Use absolute path to entrypoint
+ENTRYPOINT ["/bin/bash"]
+CMD ["/entrypoint.sh"]
