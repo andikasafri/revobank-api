@@ -15,7 +15,7 @@ RUN pip install gunicorn
 
 # Copy application code
 COPY revobank-api/app/ app/
-COPY migrations/ migrations/
+COPY revobank-api/migrations/ migrations/
 COPY revobank-api/app/.env .env
 
 # Copy and setup entrypoint with proper line endings
