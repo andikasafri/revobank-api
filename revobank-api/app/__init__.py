@@ -30,11 +30,11 @@ def create_app(config_name=None):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         app.config['TESTING'] = True
     else:
-        # Production configuration using Supabase PostgreSQL
+        # Production configuration using SSL
         connection_str = (
             f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
             f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME')}"
-            "?sslmode=disable"
+            "?sslmode=verify-full"
         )
         app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
         app.logger.info(f"Connecting to production database at {os.getenv('DB_HOST')}")
