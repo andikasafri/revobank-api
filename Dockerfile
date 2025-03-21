@@ -15,7 +15,7 @@ RUN pip install gunicorn
 
 # Copy application code
 COPY revobank-api/app/ app/
-COPY revobank-api/migrations migrations/
+COPY revobank-api/ migrations/
 COPY revobank-api/app/.env .env
 
 # Create migrations directory if it doesn't exist
