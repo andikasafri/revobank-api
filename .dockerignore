@@ -58,3 +58,10 @@ tests/
 docs/
 *.md
 LICENSE
+
+# Remove or comment out SSL cert ignore
+# *.crt
+
+# Test configuration
+tests/.env.test
+.env.test
