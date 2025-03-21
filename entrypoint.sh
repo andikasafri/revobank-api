@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-# Initialize migrations if they don't exist
-flask db init || true
+# Remove existing migrations directory
+rm -rf migrations/*
 
-# Create a fresh migration
-flask db migrate -m "Initial migration"
+# Initialize fresh migrations
+flask db init
 
 # Run database migrations
-flask db upgrade
+flask db upgrade || flask db migrate -m "initial migration" && flask db upgrade
 
 # Start the application with Gunicorn
 gunicorn --bind 0.0.0.0:8000 "app:create_app()"
