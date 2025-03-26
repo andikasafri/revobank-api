@@ -13,6 +13,8 @@ class Transaction(db.Model):
     to_account_id = db.Column(db.Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True)
     description = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    category_id = db.Column(db.Integer, ForeignKey('transaction_categories.id', ondelete='SET NULL'), nullable=True)
+    category = db.relationship('TransactionCategory', backref=db.backref('transactions', lazy=True))
 
     # Relationships
     from_account = db.relationship('Account', foreign_keys=[from_account_id])
@@ -31,4 +33,6 @@ class Transaction(db.Model):
             'to_account_id': self.to_account_id,
             'description': self.description,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            'category_id': self.category_id,
+            'category_name': self.category.name if self.category else None,
         }

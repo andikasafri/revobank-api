@@ -61,10 +61,15 @@ def create_app(config_name=None):
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    # Import models for Flask-Migrate
+    # Import models in proper order
     from app.models.user import User
     from app.models.account import Account
+    from app.models.transaction_category import TransactionCategory
     from app.models.transaction import Transaction
+    from app.models.budget import Budget
+
+    # Initialize migrations after importing all models
+    migrate.init_app(app, db)
 
     # Register blueprints
     from app.routes.auth import auth_bp

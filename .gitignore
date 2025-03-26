@@ -57,6 +57,3 @@ coverage.xml
 *.crt
 !prod-ca-2021.crt  # Allow this specific cert
 
-# Keep migrations folder but ignore versions
-migrations/versions/*
-!migrations/versions/.gitkeep
