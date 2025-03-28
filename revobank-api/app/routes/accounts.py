@@ -132,6 +132,32 @@ def update_account(account_id):
     db.session.commit()
     return jsonify(account.serialize()), 200
 
+@accounts_bp.route('/<int:account_id>/deactivate', methods=['POST'])
+@jwt_required()
+def deactivate_account(account_id):
+    """Deactivate an account
+    
+    Restrictions:
+        - Requires account ownership
+        - Account balance must be zero
+        
+    Response: 200 OK
+    """
+    current_user_id = int(get_jwt_identity())
+    account = db.session.get(Account, account_id)
+    
+    if account is None:
+        raise NotFound("Account not found")
+    if account.user_id != current_user_id:
+        raise Forbidden("You don't have access to this account")
+    
+    try:
+        account.deactivate()
+        db.session.commit()
+        return jsonify({"message": "Account deactivated successfully"}), 200
+    except ValueError as e:
+        raise BadRequest(str(e))
+
 @accounts_bp.route('/<int:account_id>', methods=['DELETE'])
 @jwt_required()
 def delete_account(account_id):
@@ -139,19 +165,20 @@ def delete_account(account_id):
     
     Restrictions:
         - Requires account ownership
-        - Account balance must be zero
+        - Account must be deactivated
         
     Response: 204 No Content
     """
     current_user_id = int(get_jwt_identity())
     account = db.session.get(Account, account_id)
+    
     if account is None:
         raise NotFound("Account not found")
     if account.user_id != current_user_id:
         raise Forbidden("You don't have access to this account")
     
-    if account.balance != 0:
-        raise BadRequest("Cannot delete account with non-zero balance")
+    if account.status != 'deactivated':
+        raise BadRequest("Cannot delete active account. Please deactivate first.")
 
     db.session.delete(account)
     db.session.commit()

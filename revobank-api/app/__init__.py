@@ -59,7 +59,6 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
-    migrate.init_app(app, db)
 
     # Import models in proper order
     from app.models.user import User

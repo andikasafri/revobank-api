@@ -10,7 +10,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())  
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())  
     accounts = db.relationship('Account', backref='user', cascade='all, delete')
-
+    
     def set_password(self, password):  
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
@@ -18,7 +18,6 @@ class User(db.Model):
             raise ValueError("Password must contain at least one uppercase letter")
         if not any(c in '!@#$%^&*()' for c in password):
             raise ValueError("Password must contain at least one special character")
-        
         self.password_hash = generate_password_hash(password)
         
     def check_password(self, password):  
