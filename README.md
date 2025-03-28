@@ -1,367 +1,234 @@
 # Revobank API
 
-A Flask-based REST API for banking operations.
-
-## Features
-
-- User Authentication (JWT)
-- Account Management
-- Transaction Processing
-- PostgreSQL Database (Supabase)
-
-## Deployment
-
-1. Set environment variables in Koyeb
-2. Enable auto-deployment from GitHub
-3. Configure health checks
-4. Set up proper logging
-
-## Environment Variables Required
-
-- `DB_HOST`
-- `DB_NAME`
-- `DB_USER`
-- `DB_PASSWORD`
-- `JWT_SECRET_KEY`
-- `FLASK_ENV`
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Installation & Setup](#installation--setup)
-- [API Documentation](#api-documentation)
-  - [User Management](#user-management)
-    - [User Registration](#user-registration)
-    - [User Login](#user-login)
-    - [Get Current User Details](#get-current-user-details)
-    - [Update Current User](#update-current-user)
-    - [Delete Current User](#delete-current-user)
-  - [Account Management](#account-management)
-    - [Get All Accounts](#get-all-accounts)
-    - [Get Single Account](#get-single-account)
-    - [Create New Account](#create-new-account)
-    - [Update Account](#update-account)
-    - [Delete Account](#delete-account)
-  - [Transaction Management](#transaction-management)
-    - [Get All Transactions](#get-all-transactions)
-    - [Get Single Transaction](#get-single-transaction)
-    - [Create Transaction](#create-transaction)
-- [Additional Notes](#additional-notes)
-- [Deployment](#deployment)
-- [Grading Component (Module 7 Assignment)](#grading-component-module-7-assignment)
+A Flask-based REST API for banking operations—securely handling user data, account details, and transaction history using SQLAlchemy and JWT. The API is deployed on Koyeb, connected to a Supabase PostgreSQL database, and auto-updates via GitHub and Docker.
 
 ## Overview
 
-Revobank API acts as the backbone for the RevoBank application by providing secure and efficient endpoints for:
+Revobank API is the backbone of the RevoBank application. It provides endpoints to:
 
-- **User Management:** Creating users, authentication, profile retrieval, updates, and deletion.
-- **Account Management:** Creating and managing bank accounts.
-- **Transaction Management:** Deposits, withdrawals, transfers, and transaction history retrieval.
+- **Manage Users:** Register, authenticate (with JWT), retrieve profiles, update, and delete users.
+- **Manage Accounts:** Create and manage bank accounts.
+- **Handle Transactions:** Perform deposits, withdrawals, transfers, and view transaction histories.
+- **Database Enhancements:** The updated database schema now includes Bills, Transaction Categories, and Budgets. (New routes for these models and middleware are coming soon.)
 
-## Features
+### Database Schema & Relationships
 
-- **Secure Authentication:** Uses JWT via Flask-JWT-Extended.
-- **Robust Error Handling:** Validations for required fields, authorization checks, and proper HTTP status codes.
-- **RESTful Endpoints:** CRUD operations on users, accounts, and transactions.
-- **Data Integrity:** Enforced foreign key constraints and balance checks in transactions.
+The database (deployed on Supabase) includes the following tables:
+
+- **Users:**
+
+  - `id` (INT, PK)
+  - `username` (VARCHAR(255), Unique)
+  - `email` (VARCHAR(255), Unique)
+  - `password_hash` (VARCHAR(255))
+  - `created_at` (DATETIME)
+  - `updated_at` (DATETIME)
+
+- **Accounts:**
+
+  - `id` (INT, PK)
+  - `user_id` (INT, FK → Users.id)
+  - `account_type` (VARCHAR(255))
+  - `account_number` (VARCHAR(255), Unique)
+  - `balance` (DECIMAL(10, 2))
+  - `created_at` (DATETIME)
+  - `updated_at` (DATETIME)
+
+- **Transactions:**
+
+  - `id` (INT, PK)
+  - `from_account_id` (INT, FK → Accounts.id, optional)
+  - `to_account_id` (INT, FK → Accounts.id, optional)
+  - `amount` (DECIMAL(10, 2))
+  - `type` (VARCHAR(255))
+  - `description` (VARCHAR(255))
+  - `created_at` (DATETIME)
+  - `category_id` (INT, FK → TransactionCategories.id) _(optional)_
+
+- **Bills:**
+
+  - Stores billing information for users.
+
+- **Transaction Categories:**
+
+  - Defines categories for transactions.
+
+- **Budgets:**
+  - Enables users to manage their budgeting limits.
+
+**Relationships:**
+
+- One user can have many accounts.
+- One account can have many transactions.
+- Transactions can link accounts as sender and receiver.
+- Bills, Transaction Categories, and Budgets are integrated into the schema for future expansion.
+
+![Visual Overview of the Schema](public/db_schema.png)
 
 ## Installation & Setup
 
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/revobank-api.git
+   git clone https://github.com/revou-fsse-oct24/milestone-3-andikasafri.git
    cd revobank-api
    ```
 
-2. **Create a Virtual Environment and Install Dependencies:**
+2. **Download Required Files:**
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+   Ensure that all necessary files (including the Flask project, Dockerfile, and configuration files) are inside the `revobank-api/revobank-api` directory.
 
 3. **Set Environment Variables:**
 
-   Create a `.env` file or set your environment variables as needed:
+   Create a `.env` file in the repository root with the following variables (adjust values as needed):
 
    ```bash
-   export DB_USER=<your_db_user>
-   export DB_PASSWORD=<your_db_password>
-   export DB_HOST=<your_db_host>
-   export DB_NAME=revobank
-   export DATABASE_URL="mysql+mysqldb://<your_db_user>:<your_db_password>@<your_db_host>/revobank?charset=utf8mb4"
-   export SECRET_KEY=<your_secret_key>
+   DB_HOST=<your_supabase_db_host>
+   DB_NAME=<your_supabase_db_name>
+   DB_USER=<your_supabase_db_user>
+   DB_PASSWORD=<your_supabase_db_password>
+   JWT_SECRET_KEY=<your_jwt_secret_key>
+   FLASK_ENV=production
+   DB_SSL_MODE=require
    ```
 
-4. **Run Migrations:**
+4. **Run Database Migrations:**
+
+   From the root of your repository, execute:
 
    ```bash
    flask db upgrade
    ```
 
-5. **Start the Application:**
+   This will update the schema on your Supabase database based on the latest models (Users, Accounts, Transactions, Bills, Transaction Categories, and Budgets).
+
+## Docker Deployment
+
+The repository includes a `docker-compose.yml` file to streamline deployment.
+
+1. **Start the Application with Docker Compose:**
 
    ```bash
-   flask run
+   docker-compose up
    ```
+
+   This command builds the Docker images, runs the containers, and launches the API service.
+
+2. **Auto-Deployment:**
+
+   The project is set up for auto-deployment using GitHub. Every push triggers a Docker build and deployment update so that the live API on Koyeb is updated in real time.
+
+## Deployed API
+
+The live API is accessible at:
+[https://vocal-katherine-andika-safri-69a23cb3.koyeb.app/](https://vocal-katherine-andika-safri-69a23cb3.koyeb.app/)
+
+## SQLAlchemy & JWT Integration
+
+### SQLAlchemy
+
+- **Model Definitions:**
+  All tables (Users, Accounts, Transactions, Bills, Transaction Categories, and Budgets) are defined as SQLAlchemy models in the `app/models` directory.
+
+- **Database Session:**
+  Interactions with the database are handled via `db.session` (e.g., retrieving a user with `db.session.get(User, current_user_id)`).
+
+- **Relationships:**
+  Relationships (such as one-to-many between Users and Accounts) are established using SQLAlchemy's `relationship` function.
+
+### JWT Authentication
+
+- **JWT Setup:**
+  Flask-JWT-Extended is used for secure authentication. Tokens are generated with a 3-hour expiry. For example, in `services/auth.py`:
+
+  ```python
+  from datetime import timedelta
+  from flask_jwt_extended import create_access_token
+
+  def generate_token(user_id):
+      return create_access_token(identity=str(user_id), expires_delta=timedelta(hours=3))
+  ```
+
+- **Protected Routes:**
+  Endpoints, such as the route for fetching the current user, are protected using the `@jwt_required()` decorator. See `routes/auth.py` for an example:
+
+  ```python
+  @auth_bp.route('/users/me', methods=['GET'])
+  @jwt_required()
+  def get_current_user():
+      current_user_id = get_jwt_identity()
+      user = db.session.get(User, current_user_id)
+      if user is None:
+          raise NotFound("User not found")
+      return jsonify({
+          'id': user.id,
+          'username': user.username,
+          'email': user.email,
+          'created_at': user.created_at.isoformat(),
+      }), 200
+  ```
 
 ## API Documentation
 
-### User Management
+For testing all available endpoints (including headers, body, and parameters), please refer to the detailed guide here:
+[https://flask-api-endpoints.netlify.app/](https://flask-api-endpoints.netlify.app/)
 
-#### User Registration
+### Endpoints Overview
 
-- **Endpoint:** `POST /api/auth/users`
-- **Description:** Creates a new user account. Required fields: `username`, `email`, and `password`.
-- **Password Requirements:** Minimum 8 characters, one uppercase letter, and one special character (e.g., `!@#$%^&*()`).
+#### User Management
 
-**Example (HTTPie):**
+- **User Registration:** `POST /api/auth/users`
+  Create a new user account.
+  _Example:_ Use HTTPie or Postman to provide `username`, `email`, and `password`.
 
-```bash
-http POST http://localhost:5000/api/auth/users \
-  username=user1 \
-  email=user1@example.com \
-  password=SecurePass123!
-```
+- **User Login:** `POST /api/auth/login`
+  Authenticate and receive a JWT access token.
 
-**Expected Response:**
+- **Get Current User:** `GET /api/auth/users/me`
+  Requires header: `Authorization: Bearer <ACCESS_TOKEN>`
 
-```json
-{
-  "message": "User created successfully"
-}
-```
+#### Account Management
 
-You can create another user similarly:
+- **Get All Accounts:** `GET /api/accounts`
+- **Get Single Account:** `GET /api/accounts/:id`
+- **Create Account:** `POST /api/accounts`
+- **Update Account:** `PUT /api/accounts/:id`
+- **Delete Account:** `DELETE /api/accounts/:id`
 
-```bash
-http POST http://localhost:5000/api/auth/users \
-  username=user2 \
-  email=user2@example.com \
-  password=AnotherPass123!
-```
+#### Transaction Management
 
-#### User Login
-
-- **Endpoint:** `POST /api/auth/login`
-- **Description:** Authenticates a user and returns an access token.
-
-**Example (HTTPie for User1):**
-
-```bash
-http POST http://localhost:5000/api/auth/login \
-  email=user1@example.com \
-  password=SecurePass123!
-```
-
-**Expected Response (sample):**
-
-```json
-{
-  "access_token": "<ACCESS_TOKEN>"
-}
-```
-
-#### Get Current User Details
-
-- **Endpoint:** `GET /api/auth/users/me`
-- **Description:** Retrieves the authenticated user’s profile.
-- **Header:** `Authorization: Bearer <ACCESS_TOKEN>`
-
-**Example (HTTPie):**
-
-```bash
-http GET http://localhost:5000/api/auth/users/me "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response (User1 sample):**
-
-```json
-{
-  "id": 3,
-  "username": "user1",
-  "email": "user1@example.com",
-  "created_at": "2025-03-10T00:12:07"
-}
-```
-
-#### Update Current User
-
-- **Endpoint:** `PUT /api/auth/users/me`
-- **Description:** Updates the authenticated user’s profile (e.g., email, password).
-
-**Example (Update Email):**
-
-```bash
-http PUT http://localhost:5000/api/auth/users/me \
-  "Authorization: Bearer <ACCESS_TOKEN>" \
-  email=newuser1@gmail.com
-```
-
-**Expected Response:**
-
-```json
-{
-  "message": "User updated successfully"
-}
-```
-
-#### Delete Current User
-
-- **Endpoint:** `DELETE /api/auth/users/me`
-- **Description:** Deletes the authenticated user’s account if no active accounts exist.
-
-**Example (HTTPie):**
-
-```bash
-http DELETE http://localhost:5000/api/auth/users/me "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-HTTP 204 No Content.
-
-### Account Management
-
-#### Get All Accounts
-
-- **Endpoint:** `GET /api/accounts`
-- **Description:** Retrieves all accounts belonging to the authenticated user.
-
-**Example (HTTPie):**
-
-```bash
-http GET http://localhost:5000/api/accounts "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-A JSON array of account objects.
-
-#### Get Single Account
-
-- **Endpoint:** `GET /api/accounts/:id`
-- **Description:** Retrieves details for a specific account (requires ownership).
-
-**Example (HTTPie):**
-
-```bash
-http GET http://localhost:5000/api/accounts/1 "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-Account details in JSON if the account belongs to the authenticated user.
-
-#### Create New Account
-
-- **Endpoint:** `POST /api/accounts`
-- **Description:** Creates a new bank account for the authenticated user.
-- **Required Fields:** `account_type` (must be one of `savings`, `checking`, or `investment`), and `account_number` (must start with `"ACC-"`).
-
-**Example (HTTPie):**
-
-```bash
-http POST http://localhost:5000/api/accounts \
-  "Authorization: Bearer <ACCESS_TOKEN>" \
-  account_type=savings \
-  account_number="ACC-1001"
-```
-
-**Expected Response:**
-The new account details in JSON with HTTP 201 Created.
-
-#### Update Account
-
-- **Endpoint:** `PUT /api/accounts/:id`
-- **Description:** Updates an account’s details (requires ownership).
-
-**Example (HTTPie):**
-
-```bash
-http PUT http://localhost:5000/api/accounts/1 \
-  "Authorization: Bearer <ACCESS_TOKEN>" \
-  account_type=checking \
-  account_number="ACC-12345"
-```
-
-**Expected Response:**
-Updated account details in JSON.
-
-#### Delete Account
-
-- **Endpoint:** `DELETE /api/accounts/:id`
-- **Description:** Deletes an account (requires ownership). Note that the account balance must be zero.
-
-**Example (HTTPie):**
-
-```bash
-http DELETE http://localhost:5000/api/accounts/1 \
-  "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-HTTP 204 No Content on success.
-
-### Transaction Management
-
-#### Get All Transactions
-
-- **Endpoint:** `GET /api/transactions`
-- **Description:** Retrieves all transactions for the authenticated user's accounts. Supports optional filters: `account_id`, `start_date`, and `end_date`.
-
-**Example (HTTPie):**
-
-```bash
-http GET http://localhost:5000/api/transactions "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-A JSON array of transaction objects.
-
-#### Get Single Transaction
-
-- **Endpoint:** `GET /api/transactions/:id`
-- **Description:** Retrieves details of a specific transaction (requires ownership of a related account).
-
-**Example (HTTPie):**
-
-```bash
-http GET http://localhost:5000/api/transactions/1 "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-**Expected Response:**
-Transaction details in JSON if authorized.
-
-#### Create Transaction
-
-- **Endpoint:** `POST /api/transactions`
-- **Description:** Initiates a new transaction. Transaction types can be `deposit`, `withdrawal`, or `transfer`.
-  - For a **deposit**, provide `to_account_id`.
-  - For a **withdrawal**, provide `from_account_id`.
-  - For a **transfer**, provide both `from_account_id` and `to_account_id`.
-
-**Example (Deposit Transaction using HTTPie):**
-
-```bash
-http POST http://localhost:5000/api/transactions \
-  "Authorization: Bearer <ACCESS_TOKEN>" \
-  type=deposit \
-  amount=1000.00 \
-  to_account_id=1 \
-  description="Initial deposit"
-```
-
-**Expected Response:**
-Transaction details in JSON with updated account balance.
+- **Get All Transactions:** `GET /api/transactions`
+- **Get Single Transaction:** `GET /api/transactions/:id`
+- **Create Transaction:** `POST /api/transactions`
+  _Note:_ Include the proper account IDs for deposits, withdrawals, or transfers. Optionally provide `category_id` for transaction categorization.
 
 ## Additional Notes
 
-- **JWT Tokens:**
-  Tokens are generated using Flask-JWT-Extended. The helper function converts user IDs to strings during token creation.
-- **Security & Validation:**
-  Endpoints enforce authorization checks to ensure that only resource owners can perform certain actions. Required fields and value formats are validated, and meaningful error messages with appropriate HTTP status codes are returned.
-- **Database Migrations:**
-  Use `flask db upgrade` to apply schema changes.
-- **Type Conversions:**
-  For financial calculations, amounts are converted to Decimal to ensure precision.
+- **Model Updates:**
+  The database schema now includes Bills, Transaction Categories, and Budgets. Although there are no new routes for these models yet, the models and migrations have been updated for future expansion.
+
+- **Future Enhancements:**
+  New endpoints and middleware will be added soon to extend functionality and improve request handling.
+
+- **Deployment & Logging:**
+  The application uses Flask's error handlers and logging to capture issues. Deployment is managed via Docker and auto-deployed on Koyeb, ensuring the live API is continuously updated.
+
+## Deliverables & Grading Component
+
+- **Database Connection:**
+  The project connects to a Supabase PostgreSQL database using SQLAlchemy.
+
+- **Schema Design:**
+  The database schema is implemented as described, with all required tables and relationships.
+
+- **CRUD Operations:**
+  All CRUD operations for Users, Accounts, and Transactions have been implemented and validated.
+
+- **Flask Authentication:**
+  Secure user authentication using JWT is in place.
+
+- **Deployed API & Documentation:**
+  The live API is deployed on Koyeb and documented with instructions for testing endpoints at [https://flask-api-endpoints.netlify.app/](https://flask-api-endpoints.netlify.app/).
+
+- **Source Code Repository:**
+  The complete codebase is available on GitHub with integrated SQLAlchemy and auto-deployment via Docker.
