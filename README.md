@@ -63,7 +63,7 @@ The database (deployed on Supabase) includes the following tables:
 - Transactions can link accounts as sender and receiver.
 - Bills, Transaction Categories, and Budgets are integrated into the schema for future expansion.
 
-![Visual Overview of the Schema](public/db_schema.png)
+![Visual Overview of the Schema](Public/db_schema.png)
 
 ## Installation & Setup
 
