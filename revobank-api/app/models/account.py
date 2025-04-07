@@ -9,11 +9,10 @@ class Account(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     account_type = db.Column(db.String(255), nullable=False)
     balance = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
-    status = db.Column(db.String(50), default='active')
+    account_number = db.Column(db.String(20), unique=True, nullable=False)  
+    status = db.Column(db.String(20),nullable=False,default='active',server_default='active')
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
-    account_number = db.Column(db.String(20), unique=True, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='active')
 
     __table_args__ = (
         CheckConstraint(balance >= 0.00, name='non_negative_balance'),
