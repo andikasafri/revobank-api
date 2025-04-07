@@ -6,7 +6,7 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.exceptions import HTTPException
-from middleware.logger_middleware import LoggerMiddleware
+from app.middleware.logger_middleware import LoggerMiddleware
 
 # Load environment variables from .env file
 load_dotenv()
