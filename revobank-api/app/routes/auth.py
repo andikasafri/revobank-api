@@ -214,13 +214,15 @@ def delete_current_user():
     """Delete authenticated user if they have no active accounts or no accounts at all"""
     current_user_id = get_jwt_identity()
     user = db.session.get(User, current_user_id)
-    if user is None:
+    
+    if not user:
         raise NotFound("User not found")
-    
-    # Check if the user has any active accounts
-    if any(account.status == 'active' for account in user.accounts):
-        raise BadRequest("Cannot delete user with active accounts. Please deactivate all accounts first.")
-    
+
+    # Check if user has accounts and if any of them are active
+    if user.accounts and any(account.status == 'active' for account in user.accounts):
+        return jsonify({"error": "Cannot delete user with active accounts. Please deactivate all accounts first."}), 400
+
     db.session.delete(user)
     db.session.commit()
-    return "", 204
+    return jsonify({"message": "User deleted successfully"}), 200
+
