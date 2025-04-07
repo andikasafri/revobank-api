@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.exceptions import HTTPException
+from middleware.logger_middleware import LoggerMiddleware
 
 # Load environment variables from .env file
 load_dotenv()
@@ -109,6 +110,8 @@ def create_app(config_name=None):
 
 # Expose the app for Gunicorn
 app = create_app()
+
+app.wsgi_app = LoggerMiddleware(app.wsgi_app)
 
 # Use Gunicorn's logger if not running as __main__
 if __name__ != '__main__':
