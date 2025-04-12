@@ -56,5 +56,5 @@ coverage.xml
 *.pem
 *.crt
 !prod-ca-2021.crt  # Allow this specific cert
-
+**/.env*
 .qodo
